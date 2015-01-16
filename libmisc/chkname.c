@@ -43,31 +43,55 @@
 #ident "$Id$"
 
 #include <ctype.h>
+#include <regex.h>
 #include "defines.h"
 #include "chkname.h"
+#include "getdef.h"
+#include <stdio.h>
 
 static bool is_valid_name (const char *name)
 {
-	/*
-	 * User/group names must match [a-z_][a-z0-9_-]*[$]
-	 */
-	if (('\0' == *name) ||
-	    !((('a' <= *name) && ('z' >= *name)) || ('_' == *name))) {
-		return false;
-	}
+       const char *class;
+       regex_t reg;
+       int result;
+       char *buf;
 
-	while ('\0' != *++name) {
-		if (!(( ('a' <= *name) && ('z' >= *name) ) ||
-		      ( ('0' <= *name) && ('9' >= *name) ) ||
-		      ('_' == *name) ||
-		      ('-' == *name) ||
-		      ( ('$' == *name) && ('\0' == *(name + 1)) )
-		     )) {
-			return false;
-		}
-	}
+       /* User/group names must match [A-Za-z_][A-Za-z0-9_-.]*[A-Za-z0-9_-.$]?.
+	  This is the POSIX portable character class. The $ at the end is
+	  needed for SAMBA. But user can also specify something else in
+	  /etc/login.defs.  */
+       class = getdef_str ("CHARACTER_CLASS");
+       if (!class)
+	 class = "[a-z_][a-z0-9_.-]*[a-z0-9_.$-]\\?";
 
-	return true;
+       if (asprintf (&buf, "^%s$", class) < 0)
+	 return -1;
+
+       memset (&reg, 0, sizeof (regex_t));
+       result = regcomp (&reg, buf, 0);
+       free (buf);
+
+       if (result)
+	 {
+	   size_t length = regerror (result, &reg, NULL, 0);
+	   char *buffer = malloc (length);
+	   if (buffer == NULL)
+	     fputs ("running out of memory!\n", stderr);
+
+	   /* else
+	      {
+	      regerror (result, &reg, buffer, length);
+	      fprintf (stderr, _("Can't compile regular expression: %s\n"),
+	      buffer);
+	      } */
+
+	   return false;
+	 }
+
+       if (regexec (&reg, name, 0, NULL, 0) != 0)
+	 return false;
+
+       return true;
 }
 
 bool is_valid_user_name (const char *name)
@@ -96,4 +120,3 @@ bool is_valid_group_name (const char *name)
 
 	return is_valid_name (name);
 }
-

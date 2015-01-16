@@ -51,6 +51,7 @@ struct itemdef {
 
 #define NUMDEFS	(sizeof(def_table)/sizeof(def_table[0]))
 static struct itemdef def_table[] = {
+	{"CHARACTER_CLASS", NULL},
 	{"CHFN_RESTRICT", NULL},
 	{"CONSOLE_GROUPS", NULL},
 	{"CONSOLE", NULL},
