@@ -14772,44 +14772,8 @@ fi
 
 
 if test "$enable_subids" != "no"; then
-				if test "$cross_compiling" = yes; then :
-  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "cannot run test program while cross compiling
-See \`config.log' for more details" "$LINENO" 5; }
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <sys/types.h>
-int main(void) {
-	uid_t u;
-	gid_t g;
-	return (sizeof u < 4) || (sizeof g < 4);
-}
-
-_ACEOF
-if ac_fn_c_try_run "$LINENO"; then :
-  id32bit="yes"
-else
-  id32bit="no"
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-
-
-	if test "x$id32bit" = "xyes"; then
-
 $as_echo "#define ENABLE_SUBIDS 1" >>confdefs.h
-
-		enable_subids="yes"
-	else
-		if test "x$enable_subids" = "xyes"; then
-			as_fn_error $? "Cannot enable support the subordinate IDs on systems where gid_t or uid_t has less than 32 bits" "$LINENO" 5
-		fi
-		enable_subids="no"
-	fi
+	enable_subids="yes"
 fi
  if test "x$enable_subids" != "xno"; then
   ENABLE_SUBIDS_TRUE=
